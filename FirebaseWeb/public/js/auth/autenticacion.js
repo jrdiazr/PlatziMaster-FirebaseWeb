@@ -1,8 +1,22 @@
 class Autenticacion {
 	autEmailPass(email, password) {
-		//$('#avatar').attr('src', 'imagenes/usuario_auth.png')
-		//Materialize.toast(`Bienvenido ${result.user.displayName}`, 5000)
-		//$('.modal').modal('close')
+		firebase
+			.auth()
+			.signInWithEmailAndPassword(email, password)
+			.then((result) => {
+				if (result.user.emailVerified) {
+					$('#avatar').attr('src', 'imagenes/usuario_auth.png');
+					Materialize.toast(`Bienvenido ${result.user.displayName}`, 5000);
+				} else {
+					firebase.auth().signOut();
+					Materialize.toast(
+						`Por favor realiza la verificación de la cuenta`,
+						5000
+					);
+				}
+			});
+
+		$('.modal').modal('close');
 	}
 
 	crearCuentaEmailPass(email, password, nombres) {
@@ -15,12 +29,12 @@ class Autenticacion {
 				});
 
 				const configuracion = {
-					url: "http://localhost:3000/",
+					url: 'https://blogeekplatzi-4836b.firebaseapp.com/',
 				};
 
 				result.user.sendEmailVerification(configuracion).catch((error) => {
-					console.log(error);
-					Materialize.toas(error.message, 4000);
+					console.error(error);
+					Materialize.toast(error.message, 4000);
 				});
 
 				firebase.auth().signOut();
@@ -30,24 +44,49 @@ class Autenticacion {
 					4000
 				);
 
-				$(".modal").modal("close");
+				$('.modal').modal('close');
 			})
 			.catch((error) => {
-				console.log(error);
-				Materialize.toas(error.message, 4000);
+				console.error(error);
+				Materialize.toast(error.message, 4000);
 			});
 	}
 
 	authCuentaGoogle() {
-		//$('#avatar').attr('src', result.user.photoURL)
-		//$('.modal').modal('close')
-		//Materialize.toast(`Bienvenido ${result.user.displayName} !! `, 4000)
+		const provider = new firebase.auth.GoogleAuthProvider();
+
+		firebase
+			.auth()
+			.signInWithPopup(provider)
+			.then((result) => {
+				$('#avatar').attr('src', result.user.photoURL);
+				$('.modal').modal('close');
+				Materialize.toast(`Bienvenido ${result.user.displayName} !! `, 4000);
+			})
+			.catch((error) => {
+				console.error(error);
+				Materialize.toast(`Error al autenticarse con google: ${error} `, 4000);
+			});
 	}
 
 	authCuentaFacebook() {
-		//$('#avatar').attr('src', result.user.photoURL)
-		//$('.modal').modal('close')
-		//Materialize.toast(`Bienvenido ${result.user.displayName} !! `, 4000)
+		const provider = new firebase.auth.FacebookAuthProvider();
+
+		firebase
+			.auth()
+			.signInWithPopup(provider)
+			.then((result) => {
+				$('#avatar').attr('src', result.user.photoURL);
+				$('.modal').modal('close');
+				Materialize.toast(`Bienvenido ${result.user.displayName} !! `, 4000);
+			})
+			.catch((error) => {
+				console.error(error);
+				Materialize.toast(
+					`Error al autenticarse con facebook: ${error} `,
+					4000
+				);
+			});
 	}
 
 	authTwitter() {
