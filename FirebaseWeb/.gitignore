@@ -1,3 +1,4 @@
 node_modules
 ConfigFirebase.js
 dist
+npm-shrinkwrap.json

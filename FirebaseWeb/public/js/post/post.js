@@ -1,38 +1,83 @@
 class Post {
-	constructor() {
-		this.db = firebase.firestore();
-		const settings = { timestampsInSnapshots: true };
-		this.db.settings(settings);
-	}
+  constructor() {
+    this.db = firebase.firestore();
+    // const settings = { timestampsInSnapshots: true };
+    // this.db.settings(settings);
+  }
 
-	crearPost(uid, emailUser, titulo, descripcion, imagenLink, videoLink) {
-		return this.db
-			.collection("posts")
-			.add({
-				uid: uid,
-				autor: emailUser,
-				titulo: titulo,
-				descripcion: descripcion,
-				imagenLink: imagenLink,
-				videoLink: videoLink,
-				fecha: firebase.firestore.FieldValue.serverTimestamp(),
-			})
-			.then((refDoc) => {
-				console.log(`Id del post => ${refDoc.id}`);
-			})
-			.catch((error) => {
-				console.error(`Error creando el post => ${error}`);
-			});
-	}
+  crearPost(uid, emailUser, titulo, descripcion, imagenLink, videoLink) {
+    return this.db
+      .collection('posts')
+      .add({
+        uid: uid,
+        autor: emailUser,
+        titulo: titulo,
+        descripcion: descripcion,
+        imagenLink: imagenLink,
+        videoLink: videoLink,
+        fecha: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then((refDoc) => {
+        console.log(`Id del post => ${refDoc.id}`);
+      })
+      .catch((error) => {
+        console.error(`Error creando el post => ${error}`);
+      });
+  }
 
-	consultarTodosPost() {}
+  consultarTodosPost() {
+    this.db
+      .collection('posts')
+      .orderBy('fecha', 'asc')
+      .orderBy('titulo', 'asc')
+      .onSnapshot((querySnapshot) => {
+        $('#posts').empty();
+        if (querySnapshot.empty) {
+          $('#posts').append(this.obtenerTemplatePostVacio());
+        } else {
+          querySnapshot.forEach((post) => {
+            let postHtml = this.obtenerPostTemplate(
+              post.data().autor,
+              post.data().titulo,
+              post.data().descripcion,
+              post.data().videoLink,
+              post.data().imagenLink,
+              Utilidad.obtenerFecha(post.data().fecha.toDate())
+            );
+            $('#posts').append(postHtml);
+          });
+        }
+      });
+  }
 
-	consultarPostxUsuario(emailUser) {}
+  consultarPostxUsuario(emailUser) {
+    this.db
+      .collection('posts')
+      .where('autor', '==', emailUser)
+      .onSnapshot((querySnapshot) => {
+        $('#posts').empty();
+        if (querySnapshot.empty) {
+          $('#posts').append(this.obtenerTemplatePostVacio());
+        } else {
+          querySnapshot.forEach((post) => {
+            let postHtml = this.obtenerPostTemplate(
+              post.data().autor,
+              post.data().titulo,
+              post.data().descripcion,
+              post.data().videoLink,
+              post.data().imagenLink,
+              Utilidad.obtenerFecha(post.data().fecha.toDate())
+            );
+            $('#posts').append(postHtml);
+          });
+        }
+      });
+  }
 
-	subirImagenPost(file, uid) {}
+  subirImagenPost(file, uid) {}
 
-	obtenerTemplatePostVacio() {
-		return `<article class="post">
+  obtenerTemplatePostVacio() {
+    return `<article class="post">
         <div class="post-titulo">
             <h5>Crea el primer Post a la comunidad</h5>
         </div>
@@ -57,18 +102,18 @@ class Post {
         <div class="post-footer container">         
         </div>
     </article>`;
-	}
+  }
 
-	obtenerPostTemplate(
-		autor,
-		titulo,
-		descripcion,
-		videoLink,
-		imagenLink,
-		fecha
-	) {
-		if (imagenLink) {
-			return `<article class="post">
+  obtenerPostTemplate(
+    autor,
+    titulo,
+    descripcion,
+    videoLink,
+    imagenLink,
+    fecha
+  ) {
+    if (imagenLink) {
+      return `<article class="post">
               <div class="post-titulo">
                   <h5>${titulo}</h5>
               </div>
@@ -100,9 +145,9 @@ class Post {
                   </div>
               </div>
           </article>`;
-		}
+    }
 
-		return `<article class="post">
+    return `<article class="post">
                   <div class="post-titulo">
                       <h5>${titulo}</h5>
                   </div>
@@ -135,5 +180,5 @@ class Post {
                       </div>
                   </div>
               </article>`;
-	}
+  }
 }
